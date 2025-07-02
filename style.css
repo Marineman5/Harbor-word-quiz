@@ -1,0 +1,294 @@
+body {
+    font-family: 'DotGothic16', monospace;
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #001f3f; /* Navy */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-size: 1.1em; /* Adjust base font size for pixel font */
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+    padding: 20px 40px;
+    border-radius: 0; /* Remove border-radius for pixel art feel */
+    box-shadow: 4px 4px 0px 0px #001f3f; /* Pixel art shadow */
+    text-align: center;
+    border: 4px solid #001f3f; /* Stronger border */
+}
+
+.hidden {
+    display: none;
+}
+
+h1 {
+    color: #001f3f; /* Navy */
+    border-bottom: 4px solid #7FDBFF; /* Aqua Blue Wave */
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.level-btn, .answer-btn, #play-again-btn {
+    background-color: #0077be; /* Stronger Aqua Blue */
+    color: white;
+    border: 2px solid #001f3f; /* Darker border for buttons */
+    padding: 15px 20px;
+    margin: 10px;
+    border-radius: 0; /* Remove border-radius */
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: background-color 0.1s, transform 0.1s;
+    width: 80%;
+    box-shadow: 2px 2px 0px 0px #001f3f; /* Pixel art shadow for buttons */
+}
+
+.level-btn:hover, #play-again-btn:hover {
+    background-color: #005fa3;
+    transform: translateY(-2px);
+}
+
+#status-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border: 2px solid #001f3f;
+    box-shadow: 2px 2px 0px 0px #001f3f;
+}
+
+#npc-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#npc-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid #7FDBFF;
+    margin-right: 20px;
+}
+
+#phrase-card {
+    background-color: rgba(238, 247, 255, 0.9); /* Slightly transparent */
+    padding: 15px; /* Paddingを小さく */
+    border-radius: 0; /* Remove border-radius */
+    flex-grow: 1;
+    border: 4px solid #001f3f; /* Stronger border */
+    box-shadow: 4px 4px 0px 0px #001f3f; /* Pixel art shadow */
+    font-size: 1.2em; /* フォントサイズを小さく */
+}
+
+#answer-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+.answer-btn {
+    width: 100%;
+    background-color: #f0f0f0; /* ポケモン風の背景色 */
+    border: 2px solid #303030; /* ポケモン風の枠線 */
+    box-shadow: 2px 2px 0px 0px #303030; /* ポケモン風の影 */
+    color: #303030; /* ポケモン風の文字色 */
+    font-size: 1em; /* フォントサイズを調整 */
+    padding: 10px 15px; /* パディングを調整 */
+    font-family: 'DotGothic16', monospace; /* フォントを明示的に指定 */
+}
+
+.answer-btn:hover {
+    background-color: #e0e0e0; /* ホバー時の色 */
+    transform: translateY(-1px); /* ホバー時の少し浮き上がるエフェクト */
+}
+
+#result-screen h2 {
+    color: #001f3f;
+}
+
+#summary {
+    text-align: left;
+    margin-top: 20px;
+}
+
+#correct-answers-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#correct-answers-list li {
+    background-color: #eef7ff;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+#start-screen-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid #001f3f; /* Navy border */
+    margin: 20px auto;
+    background-color: #eef7ff;
+}
+
+#anger-gauge {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+#anger-gauge .skull {
+    width: 30px;
+    height: 30px;
+    background-color: #ccc; /* Default grey */
+    margin: 0 5px;
+    position: relative;
+    /* Basic skull shape using unicode character or image */
+    font-size: 2em;
+    line-height: 1;
+    text-align: center;
+    color: #001f3f; /* Dark color for skull */
+}
+
+#anger-gauge .skull.active {
+    color: red; /* Red when active */
+}
+
+/* NPC Image expressions */
+.npc-normal {
+    /* Default image */
+}
+
+.npc-frown {
+    /* Style for slightly angry face */
+}
+
+.npc-angry {
+    /* Style for angry face */
+}
+
+.npc-rage {
+    /* Style for enraged face */
+}
+
+/* Timer progress (placeholder for now) */
+#timer {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #001f3f;
+    overflow: hidden; /* For future progress animation */
+    border: 2px solid #001f3f;
+    box-shadow: 2px 2px 0px 0px #001f3f;
+    transition: background-color 0.5s ease; /* Smooth color transition */
+}
+
+#timer.warning {
+    background-color: orange;
+}
+
+#timer.critical {
+    background-color: red;
+}
+
+.explosion {
+    animation: explode 0.5s forwards;
+}
+
+@keyframes explode {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+#timer.warning {
+    background-color: orange;
+}
+
+#timer.critical {
+    background-color: red;
+}
+
+.explosion {
+    animation: explode 0.5s forwards;
+}
+
+@keyframes explode {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+/* Screen shake effect */
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+    20%, 80% {
+        transform: translate3d(2px, 0, 0);
+    }
+    30%, 50%, 70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+    40%, 60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+/* Blackout effect */
+.blackout {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 3em;
+    text-align: center;
+}
+
+.blackout.active {
+    opacity: 1;
+}
+
+/* Red background flash */
+.red-flash {
+    animation: redFlash 0.3s forwards;
+}
+
+@keyframes redFlash {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(255, 0, 0, 0.3); }
+    100% { background-color: transparent; }
+}

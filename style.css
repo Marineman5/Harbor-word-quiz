@@ -36,7 +36,7 @@ h1 {
     font-size: 2em;
 }
 
-.level-btn, .answer-btn, #play-again-btn {
+.level-btn, .answer-btn, #play-again-btn, .dictionary-btn {
     background-color: #0077be; /* Stronger Aqua Blue */
     color: white;
     border: 2px solid #001f3f; /* Darker border for buttons */
@@ -50,7 +50,7 @@ h1 {
     box-shadow: 2px 2px 0px 0px #001f3f; /* Pixel art shadow for buttons */
 }
 
-.level-btn:hover, #play-again-btn:hover {
+.level-btn:hover, #play-again-btn:hover, .dictionary-btn:hover {
     background-color: #005fa3;
     transform: translateY(-2px);
 }
@@ -291,4 +291,53 @@ h1 {
     0% { background-color: transparent; }
     50% { background-color: rgba(255, 0, 0, 0.3); }
     100% { background-color: transparent; }
+}
+
+/* Dictionary specific styles */
+#dictionary-screen h2,
+#correct-answers-dictionary h3 {
+    color: #001f3f;
+    border-bottom: 4px solid #7FDBFF;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+#full-dictionary-list,
+#correct-terms-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+    max-height: 400px; /* Limit height for scrollability */
+    overflow-y: auto;
+    border: 2px solid #001f3f;
+    padding: 10px;
+    background-color: rgba(238, 247, 255, 0.8);
+    margin-bottom: 20px;
+}
+
+#full-dictionary-list li,
+#correct-terms-list li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #7FDBFF; /* Light dashed separator */
+}
+
+#full-dictionary-list li:last-child,
+#correct-terms-list li:last-child {
+    border-bottom: none;
+}
+
+#full-dictionary-list li strong,
+#correct-terms-list li strong {
+    color: #0077be; /* Highlight term */
+}
+
+#back-to-start-from-dictionary-btn {
+    width: auto; /* Adjust width for this specific button */
+    padding: 10px 20px;
+    font-size: 1em;
+}
+
+.dictionary-btn {
+    width: 80%; /* Match other buttons */
+    margin-top: 20px; /* Add some space from game start button */
 }

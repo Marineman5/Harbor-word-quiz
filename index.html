@@ -27,6 +27,7 @@
         <p>このゲームは、港湾・現場で使われる<br>会話フレーズを楽しく学べます。<br>監督の指示を理解し、正しい選択肢を選びましょう！</p>
         <img src="https://i.imgur.com/QyaMzSR.png" alt="監督の顔" id="start-screen-image">
         <button class="level-btn" data-level="監督">ゲームスタート</button>
+        <button id="open-dictionary-btn" class="dictionary-btn">辞典</button>
     </div>
 
     <div id="quiz-screen" class="container hidden">
@@ -59,7 +60,17 @@
             <h3>正解したフレーズ</h3>
             <ul id="correct-answers-list"></ul>
         </div>
+        <div id="correct-answers-dictionary">
+            <h3>正解した用語のミニ辞典</h3>
+            <ul id="correct-terms-list"></ul>
+        </div>
         <button id="play-again-btn">もう一度プレイ</button>
+    </div>
+
+    <div id="dictionary-screen" class="container hidden">
+        <h2>港湾・現場用語ミニ辞典</h2>
+        <ul id="full-dictionary-list"></ul>
+        <button id="back-to-start-from-dictionary-btn">スタート画面に戻る</button>
     </div>
 
     <script src="script_v2.js?v=20250702-final-fix"></script>

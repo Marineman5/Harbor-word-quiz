@@ -4,11 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const levelSelectionScreen = document.getElementById('level-selection-screen');
     const quizScreen = document.getElementById('quiz-screen');
     const resultScreen = document.getElementById('result-screen');
+    const dictionaryScreen = document.getElementById('dictionary-screen'); // New
 
     // Buttons
     const levelButtons = document.querySelectorAll('.level-btn');
     const answerButtons = document.querySelectorAll('.answer-btn');
     const playAgainButton = document.getElementById('play-again-btn');
+    const openDictionaryButton = document.getElementById('open-dictionary-btn'); // New
+    const backToStartFromDictionaryButton = document.getElementById('back-to-start-from-dictionary-btn'); // New
 
     // Display elements
     const scoreDisplay = document.getElementById('score');
@@ -18,8 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const correctAnswersList = document.getElementById('correct-answers-list');
     const startScreenImage = document.getElementById('start-screen-image');
     const npcImage = document.getElementById('npc-image');
-    const angerMarksDisplay = document.getElementById('anger-marks-display'); // Reference to the anger marks container
-    const bodyElement = document.body; // For screen shake and red flash
+    const angerMarksDisplay = document.getElementById('anger-marks-display');
+    const bodyElement = document.body;
+
+    const fullDictionaryList = document.getElementById('full-dictionary-list'); // New
+    const correctTermsList = document.getElementById('correct-terms-list'); // New
 
     const backgroundImages = [
         'https://i.imgur.com/SGt0IIV.png',
@@ -37,84 +43,88 @@ document.addEventListener('DOMContentLoaded', () => {
         3: 'https://i.imgur.com/njLNobx.png'  // 爆怒 (Rage)
     };
     let score = 0;
-    let timer = 0; // Initial timer will be set by qTime
+    let timer = 0;
     let timerInterval;
-    let currentLevel = '監督'; // Always '監督' for this mode
+    let currentLevel = '監督';
     let questions = [];
     let allPhrases = [];
-    let currentQuestionIndex = 0; // This will now be 'round'
-    let correctAnswers = [];
-    let mistakes = 0; // New: Track incorrect answers
-    let round = 0;    // New: Track current round
+    let portTerms = []; // New: To store dictionary terms
+    let currentQuestionIndex = 0;
+    let correctAnswers = []; // Stores the full question object
+    let correctlyAnsweredTerms = new Set(); // New: Stores unique terms from correct answers
+    let mistakes = 0;
+    let round = 0;
 
     // --- Data Loading ---
     async function loadData() {
         try {
-            const response = await fetch('phrase_templates.json');
-            allPhrases = await response.json();
-            console.log('Loaded phrases:', allPhrases); // Debug log
+            const [phrasesResponse, termsResponse] = await Promise.all([
+                fetch('phrase_templates.json'),
+                fetch('port_terms.json') // Fetch port_terms.json
+            ]);
+            allPhrases = await phrasesResponse.json();
+            portTerms = await termsResponse.json(); // Store port terms
+            console.log('Loaded phrases:', allPhrases);
+            console.log('Loaded port terms:', portTerms);
         } catch (error) {
-            console.error('Failed to load phrase data:', error);
-            phraseText.textContent = 'クイズデータの読み込みに失敗しました。';
+            console.error('Failed to load data:', error);
+            phraseText.textContent = 'データの読み込みに失敗しました。';
         }
     }
 
     // --- Game Flow ---
-    function startGame() { // No 'level' parameter needed as it's fixed
+    function startGame() {
         console.log('startGame function called.');
         currentLevel = '監督';
         score = 0;
         mistakes = 0;
         round = 0;
         correctAnswers = [];
-        questions = allPhrases; // Use all questions for this mode
+        correctlyAnsweredTerms.clear(); // Clear for new game
+        questions = allPhrases;
 
         if (questions.length === 0) {
             phraseText.textContent = `クイズが見つかりませんでした。データを確認してください。`;
             quizScreen.classList.remove('hidden');
             levelSelectionScreen.classList.add('hidden');
             resultScreen.classList.add('hidden');
-            return; // Stop here if no questions
+            return;
         }
 
-        // Shuffle all questions and then take the first 5
         questions.sort(() => Math.random() - 0.5);
-        questions = questions.slice(0, 5); // Take only the first 5 questions
+        questions = questions.slice(0, 5);
 
         updateScore(0);
         levelSelectionScreen.classList.add('hidden');
         resultScreen.classList.add('hidden');
-        // quizScreen.classList.remove('hidden'); // 画面切り替えを遅延
+        dictionaryScreen.classList.add('hidden'); // Ensure dictionary is hidden
 
         const startSound = new Audio('start_game.mp3');
         startSound.play();
 
         startSound.onended = () => {
-            quizScreen.classList.remove('hidden'); // 音声再生後に画面表示
-            bgm.play(); // 音声再生後にBGM開始
+            quizScreen.classList.remove('hidden');
+            bgm.play();
         };
 
-        // Set NPC image to normal director expression
         npcImage.src = directorExpressions[0];
         console.log(`Setting NPC image to normal director: ${directorExpressions[0]}`);
 
-        startRound(); // Start the first round
+        startRound();
     }
 
     function startRound() {
         if (round >= questions.length) {
-            showEnding(); // All questions cleared
+            showEnding();
             return;
         }
 
         const question = questions[round];
-        phraseText.textContent = question.jp; // Use 'jp' for the phrase
+        phraseText.textContent = question.jp;
 
-        // Prepare answer options using 'choices'
-        let choices = [...question.choices]; // Create a copy to shuffle
-        const correctAnswerText = question.choices[question.answer]; // Get the text of the correct answer
+        let choices = [...question.choices];
+        const correctAnswerText = question.choices[question.answer];
 
-        // Shuffle choices
         for (let i = choices.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -122,60 +132,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
         answerButtons.forEach((button, index) => {
             button.textContent = choices[index];
-            // Pass the text of the chosen answer to handleAnswer
-            button.onclick = () => handleAnswer(choices[index] === correctAnswerText); 
+            button.onclick = () => handleAnswer(choices[index] === correctAnswerText, question);
         });
 
-        startTimer(qTime(round)); // Start timer for the current round
+        startTimer(qTime(round));
     }
 
-    function handleAnswer(isCorrect, isTimeOut = false) {
+    function handleAnswer(isCorrect, question, isTimeOut = false) {
         stopTimer();
-        const question = questions[round];
 
         if (isCorrect) {
             showPositive();
-            updateScore(score + 10); // Basic score for now
-            correctAnswers.push(question); // Store correct question for summary
+            updateScore(score + 10);
+            correctAnswers.push(question);
+
+            // Identify and store terms from the correctly answered phrase
+            portTerms.forEach(termEntry => {
+                if (question.jp.includes(termEntry.term)) {
+                    correctlyAnsweredTerms.add(JSON.stringify(termEntry)); // Store as string to ensure uniqueness in Set
+                }
+            });
+
             round++;
-            startRound(); // Move to next round
+            startRound();
         } else {
             mistakes++;
             updateAngerUI(mistakes);
-            
-            // Add shake effect
+
             document.body.classList.add('shake');
             setTimeout(() => {
                 document.body.classList.remove('shake');
-            }, 500); // Animation duration is 0.5s
+            }, 500);
 
-            // Play punch sound
             const punchSound = new Audio('wrong_answer.mp3');
             punchSound.play();
 
             if (mistakes >= 3) {
                 gameOver();
-            } else if (isTimeOut) { // If it's a timeout, move to the next round
+            } else if (isTimeOut) {
                 round++;
                 startRound();
-            } else { // If it's a regular incorrect answer, continue the timer
-                startTimer(timer * 1000); // `timer` は残り秒数なのでミリ秒に変換
+            } else {
+                // If not timeout, and incorrect, just continue the timer for the current question
+                // No need to restart timer, it's already running.
+                // The original code had `startTimer(timer * 1000);` which would restart the timer.
+                // If the intention is to penalize by reducing time, that logic needs to be explicit.
+                // For now, just let the timer continue.
             }
         }
     }
 
     function qTime(r) {
-        return 10000; // Always 10 seconds
+        return 10000;
     }
 
     function updateAngerUI(mistakes) {
         console.log(`監督の怒りゲージ: ${mistakes}`);
-        // Update director's expression
         if (directorExpressions[mistakes]) {
             npcImage.src = directorExpressions[mistakes];
         }
-
-
     }
 
     function gameOver() {
@@ -183,18 +198,16 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         quizScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = 'ゲームオーバー！新人、もう帰れ！'; // Game over message
-        correctAnswersList.innerHTML = ''; // Clear summary for game over
+        finalScoreDisplay.textContent = 'ゲームオーバー！新人、もう帰れ！';
+        correctAnswersList.innerHTML = '';
+        correctTermsList.innerHTML = ''; // Clear correct terms list
         console.log('ゲームオーバー！');
 
-        // Play game over sound
         const gameOverSound = new Audio('game_over.mp3');
         gameOverSound.play();
 
-        // Set NPC image to rage expression
         npcImage.src = directorExpressions[3];
 
-        // Blackout effect
         const blackoutDiv = document.createElement('div');
         blackoutDiv.classList.add('blackout');
         blackoutDiv.textContent = '新人、もう帰れ！';
@@ -203,11 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
             blackoutDiv.classList.add('active');
         }, 10);
 
-        // Remove blackout after a delay and show retry
         setTimeout(() => {
             document.body.removeChild(blackoutDiv);
-            resetGame(); // Show the start screen for retry
-        }, 3000); // Blackout for 3 seconds
+            resetGame();
+        }, 3000);
     }
 
     function showEnding() {
@@ -215,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         quizScreen.classList.add('hidden');
         resultScreen.classList.remove('hidden');
-        finalScoreDisplay.textContent = `お見事！監督ニッコリ！最終スコア: ${score}`; // Ending message
+        finalScoreDisplay.textContent = `お見事！監督ニッコリ！最終スコア: ${score}`;
         displaySummary();
         console.log('エンディング！');
     }
@@ -224,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('正解！');
         const correctSound = new Audio('correct_answer.mp3');
         correctSound.play();
-        // TODO: Implement positive feedback UI (e.g., temporary happy face, sound)
     }
 
     function stopTimer() {
@@ -239,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetGame() {
         resultScreen.classList.add('hidden');
         levelSelectionScreen.classList.remove('hidden');
-        startScreenImage.src = directorExpressions[0]; // Ensure default image on reset
+        startScreenImage.src = directorExpressions[0];
     }
 
     // --- UI & Timer Updates ---
@@ -249,15 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startTimer(duration) {
-        clearInterval(timerInterval); // Clear any existing timer
-        timerDisplay.classList.remove('warning', 'critical', 'explosion'); // Reset classes
-        timer = duration / 1000; // Convert ms to seconds for display
+        clearInterval(timerInterval);
+        timerDisplay.classList.remove('warning', 'critical', 'explosion');
+        timer = duration / 1000;
         timerDisplay.textContent = timer;
         timerInterval = setInterval(() => {
             timer--;
             timerDisplay.textContent = timer;
 
-            // Update timer color based on remaining time
             if (timer <= 5) {
                 timerDisplay.classList.add('critical');
             } else if (timer <= 10) {
@@ -268,22 +278,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (timer <= 0) {
                 stopTimer();
-                timerDisplay.classList.add('explosion'); // Add explosion class
-                handleAnswer(false, true); // Treat time over as an incorrect answer and indicate it's a timeout
+                timerDisplay.classList.add('explosion');
+                handleAnswer(false, questions[round], true); // Pass current question for timeout
             }
         }, 1000);
     }
 
     function displaySummary() {
-        correctAnswersList.innerHTML = ''; // Clear previous results
+        correctAnswersList.innerHTML = '';
         if (correctAnswers.length === 0) {
             correctAnswersList.innerHTML = '<li>正解した問題はありませんでした。</li>';
+        } else {
+            correctAnswers.forEach(q => {
+                const li = document.createElement('li');
+                li.textContent = `${q.jp} → ${q.choices[q.answer]}`;
+                correctAnswersList.appendChild(li);
+            });
+        }
+
+        // Populate the correct terms dictionary
+        correctTermsList.innerHTML = '';
+        if (correctlyAnsweredTerms.size === 0) {
+            correctTermsList.innerHTML = '<li>正解した問題に関連する用語はありませんでした。</li>';
+        } else {
+            Array.from(correctlyAnsweredTerms).map(JSON.parse).forEach(termEntry => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${termEntry.term}</strong>: ${termEntry.meaning}`;
+                correctTermsList.appendChild(li);
+            });
+        }
+    }
+
+    // --- Dictionary Functions ---
+    function showDictionaryScreen() {
+        levelSelectionScreen.classList.add('hidden');
+        quizScreen.classList.add('hidden');
+        resultScreen.classList.add('hidden');
+        dictionaryScreen.classList.remove('hidden');
+        populateFullDictionary();
+    }
+
+    function hideDictionaryScreen() {
+        dictionaryScreen.classList.add('hidden');
+        levelSelectionScreen.classList.remove('hidden');
+    }
+
+    function populateFullDictionary() {
+        fullDictionaryList.innerHTML = '';
+        if (portTerms.length === 0) {
+            fullDictionaryList.innerHTML = '<li>用語データがありません。</li>';
             return;
         }
-        correctAnswers.forEach(q => {
+        portTerms.forEach(termEntry => {
             const li = document.createElement('li');
-            li.textContent = `${q.jp} → ${q.choices[q.answer]}`; // Display original phrase and correct choice
-            correctAnswersList.appendChild(li);
+            li.innerHTML = `<strong>${termEntry.term}</strong>: ${termEntry.meaning}`;
+            fullDictionaryList.appendChild(li);
         });
     }
 
@@ -292,17 +341,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Attaching click listener to level button.');
         button.addEventListener('click', () => {
             console.log('Level button clicked.');
-            startGame(); // No level parameter needed
+            startGame();
         });
     });
 
-    // Set initial image to 監督
     startScreenImage.src = directorExpressions[0];
 
     playAgainButton.addEventListener('click', () => {
         setRandomBackground();
         resetGame();
     });
+
+    openDictionaryButton.addEventListener('click', showDictionaryScreen); // New listener
+    backToStartFromDictionaryButton.addEventListener('click', hideDictionaryScreen); // New listener
 
     // --- Initial Load ---
     setRandomBackground();

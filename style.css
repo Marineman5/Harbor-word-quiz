@@ -341,3 +341,8 @@ h1 {
     width: 80%; /* Match other buttons */
     margin-top: 20px; /* Add some space from game start button */
 }
+
+/* ハブへの導線（全プロダクト共通：左上に小さく） */
+.homelink { position: fixed; top: 14px; left: 16px; margin: 0; font-size: 13px; font-weight: 500; z-index: 10; }
+.homelink a { color: #001f3f; opacity: 0.65; text-decoration: none; text-shadow: 0 0 6px #fff, 0 0 3px #fff; }
+.homelink a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 2px; }
